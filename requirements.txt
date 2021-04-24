@@ -1,0 +1,14 @@
+click==7.1.2
+coverage==5.5
+Flask==1.1.2
+Flask-Cors==3.0.10
+greenlet==1.0.0
+itsdangerous==1.1.0
+Jinja2==2.11.3
+MarkupSafe==1.1.1
+marshmallow==3.11.1
+PyJWT==2.0.1
+PyMySQL==1.0.2
+six==1.15.0
+SQLAlchemy==1.4.11
+Werkzeug==1.0.1
