@@ -1,19 +1,39 @@
+from functools import wraps 
+import os
+import unittest
 import click 
-from run import app 
-from flask.cli import AppGroup
-from app.database import create_all_tables
+from flask import Blueprint
+from app.database import create_all_tables, remove_all_tables
+from app.lib.decorators import use_coverage
+from config import basedir
+
+database_commands = Blueprint("db", __name__)
+test_commands = Blueprint("test", __name__)
 
 
-database_cli = AppGroup("db")
-
-@database_cli.command("create-all")
+@database_commands.cli.command("create-all")
 def create_tables():
     create_all_tables()
 
-@database_cli.command("remove-all")
+@database_commands.cli.command("drop-all")
 def remove_tables():
-    pass 
+    remove_all_tables()
 
+@test_commands.cli.command("all")
+@use_coverage
+def run_all_tests():
+    tests = unittest.TestLoader().discover("tests")
+    unittest.TextTestRunner(verbosity=2).run(tests)
+
+
+@test_commands.cli.command("file")
+@click.argument("filename")
+@use_coverage
+def test_file(filename):
+    tests = unittest.TestLoader().discover(
+        "tests",
+        pattern=f"*{filename}*")
+    unittest.TextTestRunner(verbosity=2).run(tests)
 
 
 
