@@ -32,15 +32,15 @@ def get_vic_colors():
 def add_color():
     pass 
 
-@api.route("/colors/<color_id>", method=["PUT"])
+@api.route("/colors/<color_id>", methods=["PUT"])
 def edit_colors(color_id):
     pass 
 
-@api.route("/colors/<color_id>", method=["DELETE"])
+@api.route("/colors/<color_id>", methods=["DELETE"])
 def remove_color(color_id):
     pass
 
-@api.route("/colors", method=["DELETE"])
+@api.route("/colors", methods=["DELETE"])
 def remove_colors():
     pass 
 

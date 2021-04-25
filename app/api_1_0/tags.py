@@ -20,7 +20,7 @@ def get_edit_tag():
 def remove_tag():
     pass 
 
-@pi.route("/tags", methods=["DELETE"])
+@api.route("/tags", methods=["DELETE"])
 def remove_tags():
     pass 
 

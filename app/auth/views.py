@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import request, abort , g 
+from flask import request, abort , g , url_for
 from . import auth
 from app.models import User, LoggedOutToken 
 from app.schemas import UserSchema
@@ -13,7 +13,7 @@ def issue_new_token( user : User, expire:int=3600):
         "token" : user.generate_token(expire=expire),
         "expires" : expire  ,
         "issuedAt" : datetime.utcnow(),
-        "userUrl": "" ,
+        "userUrl": url_for("api.get_current_user") ,
         "verified" : user.verified
     }
     return data 

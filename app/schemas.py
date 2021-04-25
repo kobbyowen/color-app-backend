@@ -1,40 +1,40 @@
-from flask import url_for
+from flask import url_for, g
 from marshmallow import Schema, fields, validate, validates , ValidationError, post_dump
 from app.models import User, Color, Tag
 import re 
 
-def get_tags_data( id ):
-    tags_length = len(User.tags)
+def get_tags_data( ):
+    tags_length = len(g.user.tags)
     tags_url = url_for("api.get_tags", _external=True)
     return tags_length, tags_url
 
-def get_colors_data(id):
-    colors_length = len(User.colors)
+def get_colors_data():
+    colors_length = len(g.user.colors)
     colors_url = url_for("api.get_colors", _external=True)
-    return colors_length, tags_length
+    return colors_length, colors_url
 
-def get_rated_colors_data( id, rating, endpoint):
-    length = len([color for color in User.colors if color.rating == rating ])
+def get_rated_colors_data(  rating, endpoint):
+    length = len([color for color in g.user.colors if color.rating == rating ])
     url = url_for(endpoint, _external=True)
     return length, url 
 
-def get_unrated_colors_data( id):
-    return get_rated_colors_data(id, 0, "api.get_unrated_colors")
+def get_unrated_colors_data():
+    return get_rated_colors_data( 0, "api.get_unrated_colors")
 
-def get_starred_colors_data( id ):
-    return get_rated_colors_data(id, 1, "api.get_starred_colors")
+def get_starred_colors_data(  ):
+    return get_rated_colors_data(1, "api.get_starred_colors")
 
-def get_liked_colors_data( id ):
-    return get_rated_colors_data(id, 2, "api.get_liked_colors")
+def get_liked_colors_data( ):
+    return get_rated_colors_data( 2, "api.get_liked_colors")
 
-def get_loved_colors_data( id ):
-    return get_rated_colors_data(id, 3, "api.get_loved_colors")
+def get_loved_colors_data( ):
+    return get_rated_colors_data( 3, "api.get_loved_colors")
 
-def get_fav_colors_data( id ):
-    return get_rated_colors_data(id, 4, "api.get_fav_colors")
+def get_fav_colors_data(  ):
+    return get_rated_colors_data( 4, "api.get_fav_colors")
 
-def get_vic_colors_data( id ):
-    return get_rated_colors_data(id, 5, "api.get_vic_colors")
+def get_vic_colors_data( ):
+    return get_rated_colors_data( 5, "api.get_vic_colors")
 
 
 
@@ -49,14 +49,14 @@ class UserSchema(Schema):
 
     @post_dump
     def add_urls( self, data, **kwargs):
-        data["tagsCount"], data["tagsUrl"] =  get_tags_data( self.id) 
-        data["colorsCount"], data["colorsUrl"]= get_colors_data(self.id)
-        data["unratedColorsCount"], data["unratedColorsUrl"] = get_unrated_colors_data(self.id)
-        data["starredColorsCount"], data["starredColorsUrl"] = get_starred_colors_data(self.id)
-        data["likedColorsCount"], data["likedColorsUrl"] = get_liked_colors_data(self.id)
-        data["lovedColorsCount"], data["lovedColorsUrl"] = get_loved_colors_data(self.id)
-        data["favoriteColorsCount"], data["favoriteColorsUrl"] = get_fav_colors_data(self.id)
-        data["vicColorsCount"], data["vicColorsUrl"] = get_vic_colors_data(self.id)
+        data["tagsCount"], data["tagsUrl"] =  get_tags_data() 
+        data["colorsCount"], data["colorsUrl"]= get_colors_data()
+        data["unratedColorsCount"], data["unratedColorsUrl"] = get_unrated_colors_data()
+        data["starredColorsCount"], data["starredColorsUrl"] = get_starred_colors_data()
+        data["likedColorsCount"], data["likedColorsUrl"] = get_liked_colors_data()
+        data["lovedColorsCount"], data["lovedColorsUrl"] = get_loved_colors_data()
+        data["favoriteColorsCount"], data["favoriteColorsUrl"] = get_fav_colors_data()
+        data["vicColorsCount"], data["vicColorsUrl"] = get_vic_colors_data()
 
         return data 
 
