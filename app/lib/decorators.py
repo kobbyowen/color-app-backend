@@ -4,8 +4,10 @@ from flask import abort , g , Request, request
 from app.models import User, LoggedOutToken
 from app.lib.utils import Rest 
 from coverage import coverage, Coverage , misc
-from app.errors import ColorAppException, NO_TOKEN_PROVIDED,EXPIRED_TOKEN, INVALID_TOKEN, LOGGED_OUT_TOKEN 
+from app.errors import ColorAppException, NO_TOKEN_PROVIDED,EXPIRED_TOKEN, INVALID_TOKEN,\
+     LOGGED_OUT_TOKEN, RESOURCE_NOT_FOUND , INSUFFICIENT_PERMISSION
 import jwt 
+from app.database import Base
 
 def load_user_from_token( request : Request ):
     token = request.headers.get("Authorization") 
@@ -34,6 +36,20 @@ def protected(f):
     return dec 
 
 
+def owns_resource(model : Base, resource_id="id"):
+    def func(f):
+        @wraps(f)
+        def decorated_func(*args, **kwargs):
+            id = kwargs[resource_id]
+            resource = model.query.get(id)
+            if not resource : abort(404)
+            if resource.user_id != g.user.id : 
+                raise ColorAppException(INSUFFICIENT_PERMISSION,
+                     "You lack permission to view or edit resource", 403)
+            return f(*args, **kwargs)
+        return decorated_func
+    return func 
+        
 
 def generate_coverage_report( cov: Coverage ):
     try:

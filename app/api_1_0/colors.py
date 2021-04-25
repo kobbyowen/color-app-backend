@@ -7,7 +7,6 @@ def get_colors(): pass
 def get_color(color_id):
     pass 
 
-
 @api.route("/colors/unrated")
 def get_unrated_colors(): pass 
 

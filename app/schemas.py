@@ -76,3 +76,38 @@ class UserSchema(Schema):
         if not all([ bool(res) for res in ( caps_found, small_cases_found, digits_found, symbols_found)]):
             raise ValidationError("password must contain digits, punctuations and uppercase letters")
 
+
+
+# class Tag(DefaultMixin, Base):
+#     __tablename__ = "tags"
+#     name = Column(String(32), nullable=False)
+#     color = Column(String(7), nullable=False)
+#     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+
+#     colors = relationship('ColorTags')
+
+class TagSchema(Schema):
+    id = fields.Integer(dump_only=True)
+    name = fields.Str(required=True, validate=validate.Length(max=32, min=1))
+    color = fields.Str(required=True, validate=validate.Length(max=7, min=7))
+    created_at = fields.DateTime(dump_only=True, data_key="createdAt") 
+    modified_at = fields.DateTime(dump_only=True, data_key="modifiedAt")
+
+    @validates("color")
+    def validate_color(self,value):
+        if not value.startswith("#"):
+            raise ValidationError("invalid color code")
+        if re.search("[^a-f0-9]", value, re.I):
+            raise ValidationError("tag color code must be valid hex values")
+    
+    @post_dump
+    def add_urls( self, data, **kwargs):
+        id = data["id"]
+        colors_length = len(Tag.query.get(id).colors ) 
+        colors_url = url_for("api.get_colors_for_tag", tag_id=id) 
+        data.update({
+            "colorsCount" : colors_length, 
+            "colorsUrl" : colors_url
+        })
+
+        return data 

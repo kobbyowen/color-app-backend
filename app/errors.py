@@ -9,6 +9,9 @@ INVALID_TOKEN = 12
 NO_TOKEN_PROVIDED = 13 
 RESOURCE_NOT_FOUND = 14 
 VALIDATION_FAILED = 15
+INSUFFICIENT_PERMISSION = 16 
+DUPLICATE_RESOURCE = 17 
+
 
 class ColorAppException(Exception):
     def __init__(self, code, message, status_code):

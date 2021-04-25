@@ -26,6 +26,7 @@ def create_all_tables():
     import app.models 
     app.models.Base.metadata.create_all(bind=engine)
 
+
 def remove_all_tables():
     import app.models 
     app.models.Base.metadata.drop_all(bind=engine)
