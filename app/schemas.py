@@ -78,14 +78,6 @@ class UserSchema(Schema):
 
 
 
-# class Tag(DefaultMixin, Base):
-#     __tablename__ = "tags"
-#     name = Column(String(32), nullable=False)
-#     color = Column(String(7), nullable=False)
-#     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-
-#     colors = relationship('ColorTags')
-
 class TagSchema(Schema):
     id = fields.Integer(dump_only=True)
     name = fields.Str(required=True, validate=validate.Length(max=32, min=1))
@@ -93,11 +85,18 @@ class TagSchema(Schema):
     created_at = fields.DateTime(dump_only=True, data_key="createdAt") 
     modified_at = fields.DateTime(dump_only=True, data_key="modifiedAt")
 
+    @validates("name")
+    def validate_name(self, value):
+        if value[0].isdigit():
+            raise ValidationError("tag name must not begin with a digit")            
+        if re.search("\\W", value): 
+            raise ValidationError("tag name must be alphanumeric characters only")
+
     @validates("color")
     def validate_color(self,value):
         if not value.startswith("#"):
             raise ValidationError("invalid color code")
-        if re.search("[^a-f0-9]", value, re.I):
+        if re.search("[^a-f0-9]", value[1:], re.I):
             raise ValidationError("tag color code must be valid hex values")
     
     @post_dump

@@ -42,10 +42,11 @@ def owns_resource(model : Base, resource_id="id"):
         def decorated_func(*args, **kwargs):
             id = kwargs[resource_id]
             resource = model.query.get(id)
-            if not resource : abort(404)
-            if resource.user_id != g.user.id : 
-                raise ColorAppException(INSUFFICIENT_PERMISSION,
-                     "You lack permission to view or edit resource", 403)
+            if not resource : 
+                abort(404)
+            if resource.user_id != g.user.id :
+                raise ColorAppException(code=INSUFFICIENT_PERMISSION,
+                     message="You lack permission to view or edit resource", status_code=403)
             return f(*args, **kwargs)
         return decorated_func
     return func 

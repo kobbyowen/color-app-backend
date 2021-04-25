@@ -14,7 +14,7 @@ DUPLICATE_RESOURCE = 17
 
 
 class ColorAppException(Exception):
-    def __init__(self, code, message, status_code):
+    def __init__(self, code=1, message="An error occured", status_code=400):
         super().__init__(code, message, status_code)
         self.code = code 
         self.message = message 
@@ -33,7 +33,7 @@ def register_error_handlers(app):
         return Rest.error(
             code=err.code , 
             message=err.message,
-            response_code=400
+            response_code=err.status_code
         )
 
     @app.errorhandler(404)

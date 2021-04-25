@@ -18,11 +18,11 @@ class ProductionConfig(Config):
 
 class DevelopmentConfig(Config):
     DEBUG = True 
-    DATABASE_URI = f"sqlite:///{os.path.join(basedir, 'data', 'data.sqlite')}"
+    DATABASE_URI = f"sqlite:///{os.path.join(basedir, 'data', 'data3.sqlite')}"
 
 class TestingConfig(Config):
     TESTING= True 
-    DATABASE_URI = f"sqlite:///{os.path.join(basedir, 'data', 'testing.sqlite')}"
+    DATABASE_URI = f"sqlite:///{os.path.join(basedir, 'data', 'testing3.sqlite')}"
 
 
 config = {

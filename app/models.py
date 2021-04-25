@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta 
 from werkzeug.security import check_password_hash, generate_password_hash
-from sqlalchemy import Column, Integer, DateTime, String, ForeignKey, Text, Boolean
+from sqlalchemy import Column, Integer, DateTime, String, UniqueConstraint, ForeignKey, Text, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declared_attr
 from app.database import Base 
@@ -64,9 +64,11 @@ class Color(DefaultMixin, Base):
     description = Column(Text)
     rating = Column(Integer, default=0)
     code = Column(String(7), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id',  onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
-    tags = relationship('ColorTags')
+    tags = relationship('ColorTags', backref="color")
+
+    __table_args__ = (UniqueConstraint('name', 'user_id', name='_user_colorname_uc'),)
 
     def __repr__(self):
         return f"<Color {code}>"
@@ -76,9 +78,11 @@ class Tag(DefaultMixin, Base):
     __tablename__ = "tags"
     name = Column(String(32), nullable=False)
     color = Column(String(7), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id',  onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
-    colors = relationship('ColorTags')
+    colors = relationship('ColorTags',  backref="tag")
+    
+    __table_args__ = (UniqueConstraint('name', 'user_id', name='_user_tagname_uc'),)
 
     def __repr__(self):
         return f"<Tag {name}>"
@@ -86,8 +90,10 @@ class Tag(DefaultMixin, Base):
 
 class ColorTags( DefaultMixin, Base):
     __tablename__ ="color_tags"
-    color_id = Column(Integer, ForeignKey("colors.id") , nullable=False)
-    tag_id = Column(Integer, ForeignKey("tags.id"), nullable=False ) 
+    color_id = Column(Integer, ForeignKey("colors.id",onupdate="CASCADE", ondelete="CASCADE" ) , nullable=False)
+    tag_id = Column(Integer, ForeignKey("tags.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False ) 
+
+    __table_args__ = (UniqueConstraint('color_id', 'tag_id', name='_user_colortags_uc'),)
 
 class LoggedOutToken( DefaultMixin, Base):
     __tablename__ = "expired_tokens"
