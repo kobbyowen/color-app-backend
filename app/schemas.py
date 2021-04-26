@@ -1,6 +1,6 @@
 from flask import url_for, g
 from marshmallow import Schema, fields, validate, validates , ValidationError, post_dump
-from app.models import User, Color, Tag
+from app.models import User, Color, Tag, ColorTags
 import re 
 
 def get_tags_data( ):
@@ -36,6 +36,19 @@ def get_fav_colors_data(  ):
 def get_vic_colors_data( ):
     return get_rated_colors_data( 5, "api.get_vic_colors")
 
+
+def validate_name(value):
+    if value[0].isdigit():
+        raise ValidationError("name must not begin with a digit")            
+    if re.search("\\W", value): 
+        raise ValidationError("name must be alphanumeric characters only")
+
+def validate_color_code(value):
+    if not value.startswith("#"):
+        raise ValidationError("invalid color code")
+    if re.search("[^a-f0-9]", value[1:], re.I):
+        raise ValidationError("color code must be valid hex values")
+    
 
 
 class UserSchema(Schema):
@@ -87,17 +100,11 @@ class TagSchema(Schema):
 
     @validates("name")
     def validate_name(self, value):
-        if value[0].isdigit():
-            raise ValidationError("tag name must not begin with a digit")            
-        if re.search("\\W", value): 
-            raise ValidationError("tag name must be alphanumeric characters only")
-
+        validate_name(value)
+        
     @validates("color")
     def validate_color(self,value):
-        if not value.startswith("#"):
-            raise ValidationError("invalid color code")
-        if re.search("[^a-f0-9]", value[1:], re.I):
-            raise ValidationError("tag color code must be valid hex values")
+        validate_color_code(value)
     
     @post_dump
     def add_urls( self, data, **kwargs):
@@ -107,6 +114,39 @@ class TagSchema(Schema):
         data.update({
             "colorsCount" : colors_length, 
             "colorsUrl" : colors_url
+        })
+
+        return data 
+
+# name = Column(String(255), nullable=False)
+#     description = Column(Text)
+#     rating = Column(Integer, default=0)
+#     code = Column(String(7), nullable=False)
+
+class ColorSchema(Schema):
+    id = fields.Integer(dump_only=True)
+    name = fields.Str(validate=validate.Length(min=1, max=255))
+    description = fields.Str()
+    rating = fields.Integer(validate=Range(min=1, min_inclusive=True, max=5, max_inclusive=True))
+    code = fields.Str(validate=validate.Length(min=7, max=7))
+    created_at = fields.DateTime(dump_only=True, data_key="createdAt") 
+    modified_at = fields.DateTime(dump_only=True, data_key="modifiedAt")
+
+    @validates("name")
+    def validate_name(self, value):
+        validate_name(value)
+        
+    @validates("code")
+    def validate_color(self,value):
+        validate_color_code(value)
+    
+    @post_dump 
+    def add_urls(self, data, **kwargs):
+        id = data["id"] 
+        tag_length = len(Color.query.get(id).tags) 
+        data.update({
+            "tagsCount" : tag_length , 
+            "tagsUrl" : url_for("api.get_color_labels", color_id=id)
         })
 
         return data 

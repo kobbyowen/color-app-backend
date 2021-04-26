@@ -1,13 +1,15 @@
 from functools import wraps
 import os 
 from flask import abort , g , Request, request
-from app.models import User, LoggedOutToken
+from app.models import User, LoggedOutToken, Color, Tag 
 from app.lib.utils import Rest 
 from coverage import coverage, Coverage , misc
 from app.errors import ColorAppException, NO_TOKEN_PROVIDED,EXPIRED_TOKEN, INVALID_TOKEN,\
      LOGGED_OUT_TOKEN, RESOURCE_NOT_FOUND , INSUFFICIENT_PERMISSION
 import jwt 
 from app.database import Base
+
+
 
 def load_user_from_token( request : Request ):
     token = request.headers.get("Authorization") 
@@ -51,6 +53,9 @@ def owns_resource(model : Base, resource_id="id"):
         return decorated_func
     return func 
         
+def owns_color = owns_resource (Color, "color_id")
+def owns_tag = owns_resource(Tag, "tag_id")
+
 
 def generate_coverage_report( cov: Coverage ):
     try:

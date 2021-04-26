@@ -4,7 +4,7 @@ from app.schemas import TagSchema
 from flask import g , request, url_for 
 from app.lib.utils import Rest
 from app.database import db_session
-from app.lib.decorators import owns_resource
+from app.lib.decorators import owns_tag
 from app.errors import ColorAppException, DUPLICATE_RESOURCE
 from marshmallow import ValidationError 
 
@@ -29,30 +29,28 @@ def add_tag():
 
 
 @api.route("/tag/<int:tag_id>")
-@owns_resource(Tag, "tag_id")
+@owns_tag
 def get_tag_details(tag_id):
     return Rest.success(data=TagSchema().dump(Tag.query.get(tag_id)))
 
 
 @api.route("/tag/<int:tag_id>", methods=["PUT"])
-@owns_resource(Tag, "tag_id")
+@owns_tag
 def get_edit_tag(tag_id):
     body = request.json
     tag = Tag.query.get(tag_id) 
     results = TagSchema().load(body)
-    tag_check = Tag.query.filter(Tag.id!=tag_id, Tag.name==results["name"],
-             Tag.user_id == g.user.id).first()
+    tag_check = Tag.query.filter(Tag.id!=tag_id, Tag.name==results["name"], Tag.user_id == g.user.id).first()
     if tag_check: raise ColorAppException(DUPLICATE_RESOURCE, "a tag with same name already exist",400) 
     tag.name = results["name"]
     tag.color = results["color"]
     db_session.add(tag)
     db_session.commit() 
-    data=TagSchema().dump(tag)
-    return Rest.success(data=data)
+    return Rest.success(data=TagSchema().dump(tag))
 
     
 @api.route("/tag/<int:tag_id>", methods=["DELETE"])
-@owns_resource(Tag, "tag_id")
+@owns_tag
 def remove_tag(tag_id):
     tag = Tag.query.get(tag_id)
     db_session.delete(tag) 
@@ -65,7 +63,7 @@ def remove_tags():
     tag_ids = request.json.get("tag_ids")
     if not tag_ids: raise ValidationError("tag ids required")
     for tag_id in tag_ids :
-        owns_resource(Tag, "tag_id")(lambda tag_id: None)(tag_id=tag_id)
+        owns_tag(lambda tag_id: None)(tag_id=tag_id)
     map(lambda tag: db_session.delete(tag) , map(lambda id : Tag.query.get(id), tag_ids))
     db_session.commit() 
     return Rest.success()
