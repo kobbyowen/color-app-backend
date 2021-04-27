@@ -1,12 +1,13 @@
 from flask import g, request 
 from app.models import Color, ColorTags, Tag
-from app.schemas import ColorSchema
-from sqlalchemy.sql.elements import BinaryExpression
+from app.schemas import ColorSchema, TagSchema
+from sqlalchemy.sql.expression import BinaryExpression
 from app.lib.utils import Rest 
-from app.lib.decorators import owns_color
+from app.lib.decorators import owns_color, owns_tag
 from functools import partial 
 from . import api , delete_models
 from app.errors import ColorAppException, DUPLICATE_RESOURCE
+from app.database import db_session
 
 
 def _add_pagination_data( data:dict, page: int, size: int, count:int):
@@ -17,9 +18,29 @@ def _add_pagination_data( data:dict, page: int, size: int, count:int):
     })
     return data 
 
+def _get_color_tags(color_id:int, tags_id:int):
+    color_tags = [ColorTags.query.filter(
+        ColorTags.color_id == color_id, ColorTags.tag_id = tag_id).first()
+        for tag_id in tags_id 
+    ]
+    assert(all(color_tags))
+    return color_tags
+
+def _remove_tags( color_id:int ,  tags_id:list  ):
+    color_tags = _get_color_tags(color_id, tags_id)
+    for color_tag in color_tags: db_session.delete(color_tag)
+    db_session.commit() 
+
+
+def _add_tags( color_id, list( new_tags_id - old_tags_id)):
+    color_tags = _get_color_tags(color_id, tags_id)
+    for color_tag in color_tags: db_session.add(color_tag)
+    db_session.commit() 
+
+
 def _get_colors_helper(argslist, *expr) :
     if len(expr) and not all([isinstance(arg, BinaryExpression) for arg in expr]):
-        raise TypeError("expr arguments must be of type 'BinaryExpression ")
+        raise TypeError("expr arguments must be of type 'BinaryExpression' ")
     filter_func = Color.query.filter
     user_filter_func = partial(filter_func, Color.user_id == g.user.id)
     count = user_filter_func(*expr).count() 
@@ -53,14 +74,33 @@ def get_color(color_id):
 @api.route("/colors/<color_id>/tags")
 @owns_color
 def get_color_tags(color_id):
-    tags = Color.query.get(color_id).tags 
-    
+    color_tags = Color.query.get(color_id).tags 
+    tags = [Tag.query.get(color_tag.tag_id) for color_tag in color_tags]
+    data = TagSchema().dumps(tags, many=True)
+    return Rest.success(data= {"tags": data})
 
 @api.route("/colors/<color_id>/tags", method=["PUT"])
 @owns_color
 def get_color_tags(color_id):
-    tags = Color.query.get(color_id).tags 
+    tags_id = request.json["tags_id"]
    
+    # check tag ids if they exist and user owns them 
+    for tag_id in tags_id : 
+        owns_tag(lambda tag_id: None)( tag_id = tag_id)
+   
+    existing_tags = Color.query.get(color_id).tags 
+    existing_tag_ids = [existing_tag.tag_id for existing_tag in existing_tags]
+    
+    old_tags_id = set(existing_tag_ids)
+    new_tags_id = set(tags_id)
+
+    _remove_tags( color_id,   list(old_tags_ids - new_tags_id) )
+    _add_tags( color_id, list( new_tags_id - old_tags_id))
+
+    existing_tags = [Tag.query.get(color_tag.tag_id) for color_tag in existing_tags]
+    return Rest.sucess(data={"tags": TagSchema().dump(existing_tags, many=True)})
+
+    
 @api.route("/colors/unrated")
 def get_unrated_colors(): 
     data = _get_colors_helper(request.args, Color.rating == 0)
