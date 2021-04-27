@@ -127,7 +127,7 @@ class ColorSchema(Schema):
     id = fields.Integer(dump_only=True)
     name = fields.Str(validate=validate.Length(min=1, max=255))
     description = fields.Str()
-    rating = fields.Integer(validate=Range(min=1, min_inclusive=True, max=5, max_inclusive=True))
+    rating = fields.Integer(validate=validate.Range(min=1, min_inclusive=True, max=5, max_inclusive=True))
     code = fields.Str(validate=validate.Length(min=7, max=7))
     created_at = fields.DateTime(dump_only=True, data_key="createdAt") 
     modified_at = fields.DateTime(dump_only=True, data_key="modifiedAt")

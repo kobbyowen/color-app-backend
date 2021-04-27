@@ -53,8 +53,8 @@ def owns_resource(model : Base, resource_id="id"):
         return decorated_func
     return func 
         
-def owns_color = owns_resource (Color, "color_id")
-def owns_tag = owns_resource(Tag, "tag_id")
+owns_color = owns_resource (Color, "color_id")
+owns_tag = owns_resource(Tag, "tag_id")
 
 
 def generate_coverage_report( cov: Coverage ):
