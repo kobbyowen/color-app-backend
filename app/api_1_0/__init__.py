@@ -7,4 +7,13 @@ api = Blueprint("api", __name__)
 def load_user():
     load_user_from_token(request)
 
+def delete_models( model, body:dict, key: str):
+    model_ids = request.json[str]
+    if not model_ids: raise ValidationError("ids required")
+    for id in model_ids :
+        owns_tag(lambda model_id: None)(model_id=id)
+    [ db_session.delete(m)  for m in map(lambda id : model.query.get(id), model_ids)]
+    db_session.commit() 
+    
+
 from . import errors, user, tags, colors 
