@@ -9,7 +9,7 @@ from app.errors import ColorAppException, DUPLICATE_RESOURCE
 from marshmallow import ValidationError 
 
 def _check_tag_exists(name, id=-1):
-    tag_check = Tag.query.filter(Tag.id!=tag_id, Tag.name==name, Tag.user_id == g.user.id).first()
+    tag_check = Tag.query.filter(Tag.id!=id, Tag.name==name, Tag.user_id == g.user.id).first()
     if tag_check: 
         raise ColorAppException(DUPLICATE_RESOURCE, "a tag with same name already exist",400)
 
@@ -62,7 +62,7 @@ def remove_tag(tag_id):
 
 @api.route("/tags", methods=["DELETE"])
 def remove_tags():
-    delete_models(Tag, request.json, "tags_id")
+    delete_models(Tag, request.json, "tag_ids")
     return Rest.success()
 
 @api.route("/tag/<int:tag_id>/colors")

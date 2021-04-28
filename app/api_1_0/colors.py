@@ -18,22 +18,22 @@ def _add_pagination_data( data:dict, page: int, size: int, count:int):
     })
     return data 
 
-def _get_color_tags(color_id:int, tags_id:int):
+def _get_color_tags(color_id:int, tag_ids:int):
     color_tags = [ColorTags.query.filter(
         ColorTags.color_id == color_id, ColorTags.tag_id == tag_id).first()
-        for tag_id in tags_id 
+        for tag_id in tag_ids 
     ]
     assert(all(color_tags))
     return color_tags
 
-def _remove_tags( color_id:int ,  tags_id:list  ):
-    color_tags = _get_color_tags(color_id, tags_id)
+def _remove_tags( color_id:int ,  tag_ids:list  ):
+    color_tags = _get_color_tags(color_id, tag_ids)
     for color_tag in color_tags: db_session.delete(color_tag)
     db_session.commit() 
 
 
-def _add_tags( color_id:int, tags_id:list):
-    color_tags = _get_color_tags(color_id, tags_id)
+def _add_tags( color_id:int, tag_ids:list):
+    color_tags = _get_color_tags(color_id, tag_ids)
     for color_tag in color_tags: db_session.add(color_tag)
     db_session.commit() 
 
@@ -82,17 +82,17 @@ def get_color_tags(color_id):
 @api.route("/colors/<color_id>/tags", methods=["PUT"])
 @owns_color
 def edit_color_tags(color_id):
-    tags_id = request.json["tags_id"]
+    tag_ids = request.json["tag_ids"]
    
     # check tag ids if they exist and user owns them 
-    for tag_id in tags_id : 
+    for tag_id in tag_ids : 
         owns_tag(lambda tag_id: None)( tag_id = tag_id)
    
     existing_tags = Color.query.get(color_id).tags 
     existing_tag_ids = [existing_tag.tag_id for existing_tag in existing_tags]
     
     old_tags_id = set(existing_tag_ids)
-    new_tags_id = set(tags_id)
+    new_tags_id = set(tag_ids)
 
     _remove_tags( color_id,   list(old_tags_ids - new_tags_id) )
     _add_tags( color_id, list( new_tags_id - old_tags_id))
@@ -163,7 +163,7 @@ def remove_color(color_id):
 
 @api.route("/colors", methods=["DELETE"])
 def remove_colors():
-    delete_models(Color, request.json, "colors_id")
+    delete_models(Color, request.json, "color_ids")
     return Rest.success()
 
 

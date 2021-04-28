@@ -71,7 +71,7 @@ class Color(DefaultMixin, Base):
     __table_args__ = (UniqueConstraint('name', 'user_id', name='_user_colorname_uc'),)
 
     def __repr__(self):
-        return f"<Color {code}>"
+        return f"<Color {self.code}>"
 
 
 class Tag(DefaultMixin, Base):
@@ -85,7 +85,7 @@ class Tag(DefaultMixin, Base):
     __table_args__ = (UniqueConstraint('name', 'user_id', name='_user_tagname_uc'),)
 
     def __repr__(self):
-        return f"<Tag {name}>"
+        return f"<Tag {self.name}>"
 
 
 class ColorTags( DefaultMixin, Base):
