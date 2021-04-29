@@ -8,5 +8,4 @@ def get_current_user():
     result = UserSchema().dump(g.user)
     return Rest.success(data=result)
 
-    
 

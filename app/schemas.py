@@ -118,10 +118,6 @@ class TagSchema(Schema):
 
         return data 
 
-# name = Column(String(255), nullable=False)
-#     description = Column(Text)
-#     rating = Column(Integer, default=0)
-#     code = Column(String(7), nullable=False)
 
 class ColorSchema(Schema):
     id = fields.Integer(dump_only=True)
@@ -146,7 +142,7 @@ class ColorSchema(Schema):
         tag_length = len(Color.query.get(id).tags) 
         data.update({
             "tagsCount" : tag_length , 
-            "tagsUrl" : url_for("api.get_color_labels", color_id=id)
+            "tagsUrl" : url_for("api.get_color_tags", color_id=id)
         })
 
         return data 
