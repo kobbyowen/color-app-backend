@@ -29,7 +29,7 @@ def add_tag():
     db_session.add(tag)
     db_session.commit() 
     return Rest.success(data=TagSchema().dump(tag), response_code=201, 
-    headers={"Location": url_for("api.get_tag_details", tag_id=tag.id)})
+    headers={"Location": url_for("api.get_tag_details", tag_id=tag.id, _external=True)})
 
 
 @api.route("/tag/<int:tag_id>")

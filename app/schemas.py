@@ -110,7 +110,7 @@ class TagSchema(Schema):
     def add_urls( self, data, **kwargs):
         id = data["id"]
         colors_length = len(Tag.query.get(id).colors ) 
-        colors_url = url_for("api.get_colors_for_tag", tag_id=id) 
+        colors_url = url_for("api.get_colors_for_tag", tag_id=id, _external=True) 
         data.update({
             "colorsCount" : colors_length, 
             "colorsUrl" : colors_url
@@ -142,7 +142,7 @@ class ColorSchema(Schema):
         tag_length = len(Color.query.get(id).tags) 
         data.update({
             "tagsCount" : tag_length , 
-            "tagsUrl" : url_for("api.get_color_tags", color_id=id)
+            "tagsUrl" : url_for("api.get_color_tags", color_id=id, _external=True)
         })
 
         return data 

@@ -13,7 +13,7 @@ def issue_new_token( user : User, expire:int=3600):
         "token" : user.generate_token(expire=expire),
         "expires" : expire  ,
         "issuedAt" : datetime.utcnow(),
-        "userUrl": url_for("api.get_current_user") ,
+        "userUrl": url_for("api.get_current_user", _external=True) ,
         "verified" : user.verified
     }
     return data 

@@ -146,7 +146,7 @@ def add_color():
     db_session.add(color)
     db_session.commit() 
     return Rest.success(data=ColorSchema().dump(color), response_code=201, 
-        **{"Location": url_for("api.get_color", color_id=color.id)}) 
+        **{"Location": url_for("api.get_color", color_id=color.id, _external=True)}) 
 
 @api.route("/color/<int:color_id>", methods=["PUT"])
 @owns_color
