@@ -6,7 +6,7 @@ from app.api_1_0 import api
 from manage import database_commands, test_commands
 from config import config 
 from app.errors import register_error_handlers
-
+from app.database import create_all_tables
 
 cors = CORS()
 
@@ -24,6 +24,7 @@ def create_app ( config_name ):
     app.register_blueprint(auth, url_prefix="/auth/")
     app.register_blueprint(api, url_prefix="/api/v1/")
     
+    create_all_tables()
 
     return app 
 
