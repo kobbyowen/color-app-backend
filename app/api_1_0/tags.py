@@ -1,12 +1,17 @@
-from . import api 
+from . import api , delete_tags
 from app.models import Tag 
-from app.schemas import TagSchema
+from app.schemas import TagSchema, ColorSchema
 from flask import g , request, url_for 
 from app.lib.utils import Rest
 from app.database import db_session
-from app.lib.decorators import owns_resource
+from app.lib.decorators import owns_tag
 from app.errors import ColorAppException, DUPLICATE_RESOURCE
 from marshmallow import ValidationError 
+
+def _check_tag_exists(name, id=-1):
+    tag_check = Tag.query.filter(Tag.id!=id, Tag.name==name, Tag.user_id == g.user.id).first()
+    if tag_check: 
+        raise ColorAppException(DUPLICATE_RESOURCE, "a tag with same name already exist",400)
 
 @api.route("/tags")
 def get_tags():
@@ -18,8 +23,7 @@ def get_tags():
 @api.route("/tags", methods=["POST"])
 def add_tag():
     results = TagSchema().load(request.json)
-    tag = Tag.query.filter(Tag.name == results["name"], Tag.user_id == g.user.id).first() 
-    if tag: raise ColorAppException(DUPLICATE_RESOURCE, "a tag with same name already exist",400)
+    _check_tag_exists(results["name"])
     tag = Tag(**results)
     tag.user_id = g.user.id 
     db_session.add(tag)
@@ -29,62 +33,39 @@ def add_tag():
 
 
 @api.route("/tag/<int:tag_id>")
-@owns_resource(Tag, "tag_id")
+@owns_tag
 def get_tag_details(tag_id):
     return Rest.success(data=TagSchema().dump(Tag.query.get(tag_id)))
 
 
 @api.route("/tag/<int:tag_id>", methods=["PUT"])
-@owns_resource(Tag, "tag_id")
+@owns_tag
 def get_edit_tag(tag_id):
     body = request.json
     tag = Tag.query.get(tag_id) 
     results = TagSchema().load(body)
-    tag_check = Tag.query.filter(Tag.id!=tag_id, Tag.name==results["name"],
-             Tag.user_id == g.user.id).first()
-    if tag_check: raise ColorAppException(DUPLICATE_RESOURCE, "a tag with same name already exist",400) 
-    tag.name = results["name"]
-    tag.color = results["color"]
+    _check_tag_exists(results["name"], tag_id) 
+    tag.name , tag.color = results["name"], results["color"]
     db_session.add(tag)
     db_session.commit() 
-    data=TagSchema().dump(tag)
-    return Rest.success(data=data)
+    return Rest.success(data=TagSchema().dump(tag))
 
     
 @api.route("/tag/<int:tag_id>", methods=["DELETE"])
-@owns_resource(Tag, "tag_id")
+@owns_tag
 def remove_tag(tag_id):
-    tag = Tag.query.get(tag_id)
-    db_session.delete(tag) 
-    db_session.commit() 
+    delete_tags({"tag_ids": [tag_id]}, "tag_ids")
     return Rest.success()
 
 
 @api.route("/tags", methods=["DELETE"])
 def remove_tags():
-    tag_ids = request.json.get("tag_ids")
-    if not tag_ids: raise ValidationError("tag ids required")
-    for tag_id in tag_ids :
-        owns_resource(Tag, "tag_id")(lambda tag_id: None)(tag_id=tag_id)
-    map(lambda tag: db_session.delete(tag) , map(lambda id : Tag.query.get(id), tag_ids))
-    db_session.commit() 
+    delete_tags(request.json, "tag_ids")
     return Rest.success()
 
-# @api.route("/tag/<int:tag_id>/colors")
-# def get_colors_for_tag(tag_id):
-#     colors = Tag.query.get(tag_id).colors 
-#     colors_length= len(colors)
-#     # raise value error if value cannot be converted to integer
-#     # allow it and catch it later 
-#     count = int(request.args.get("per_page",  20))
-#     if count > colors_length : count = colors_length
-
-#     start = int(request.args.get("start", 0))
-#     if start < 0 : start = 0 
-#     if start > colors_length : start = colors_length
-
-#     colors = colors[start: start+count] 
-#     prev = start != 0 
-#     prevCount = start 
-#     next = len(colors) + start < colors_length 
-#     nextCount = colors_length - (len(colors) + start)
+@api.route("/tag/<int:tag_id>/colors")
+@owns_tag
+def get_colors_for_tag(tag_id):
+    color_tags = Tag.query.get(tag_id).colors 
+    colors = [Color.query.get(color_tag.color_id) for color_tag in color_tags]
+    return Rest.success(data={"colors": ColorSchema().dump(colors, many=True)})

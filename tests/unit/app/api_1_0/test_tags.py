@@ -1,7 +1,6 @@
 from app.models import User, Tag, Color
 from app.database import db_session
-from tests import DefaultTestCase 
-from tests import fetch, get_api_headers, add_colors, add_tags
+from tests import DefaultTestCase, fetch, get_api_headers, add_colors, add_tags
 from app.errors import INSUFFICIENT_PERMISSION, VALIDATION_FAILED, \
     RESOURCE_NOT_FOUND, DUPLICATE_RESOURCE
 
@@ -12,10 +11,6 @@ class TagTestCase(DefaultTestCase):
         add_colors()
 
     def tearDown(self):
-        Tag.query.delete() 
-        Color.query.delete() 
-        db_session.commit() 
-        db_session.commit() 
         super().tearDown()
 
 

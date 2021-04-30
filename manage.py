@@ -25,6 +25,10 @@ def run_all_tests():
     tests = unittest.TestLoader().discover("tests")
     unittest.TextTestRunner(verbosity=2).run(tests)
 
+@test_commands.cli.command("coverage-test")
+def run_coverage_tests():
+    cmd = """coverage run --omit 'venv/*'  -m unittest discover "tests" && coverage html -d coverage_html"""
+    os.system(cmd)
 
 @test_commands.cli.command("file")
 @click.argument("filename")
