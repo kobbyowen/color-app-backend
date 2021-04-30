@@ -4,7 +4,8 @@ A color organizing app in Flask
 Uses Flask, SQLAlchemy and Marshmallow.
 
 
-Easy Code Flask Beginners To Study
+Easy Code For Flask Beginners To Study
+
 Incorporates Tests And Coverage 
 
 This is a simple App. 
@@ -40,7 +41,7 @@ flask test file [test file name]
 ```bash 
 # use set instead of export on windows
 export FLASK_ENV=development 
-eport FLASK_APP=run.py 
+export FLASK_APP=run.py 
 flask test all
 ```
 
