@@ -2,7 +2,8 @@
 A color organizing app in Flask
 
 Uses Flask, SQLAlchemy and Marshmallow.
-
+# I DIDNT USE FLASK-SQLALCHEMY because I dont like it!!!!!! (PRACTICE LOOSE COUPLING )
+# I DIDNT USE FLASK-MARSHMALLOW because I dont like it!!!!!! (PRACTICE LOOSE COUPLING )
 
 Easy Code For Flask Beginners To Study
 
