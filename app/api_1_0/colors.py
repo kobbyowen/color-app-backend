@@ -5,8 +5,8 @@ from sqlalchemy.sql.expression import BinaryExpression
 from app.lib.utils import Rest 
 from app.lib.decorators import owns_color, owns_tag
 from functools import partial 
-from . import api , delete_models
-from app.errors import ColorAppException, DUPLICATE_RESOURCE
+from . import api , delete_colors
+from app.errors import ColorAppException, DUPLICATE_RESOURCE, INSUFFICIENT_PERMISSION
 from app.database import db_session
 
 
@@ -27,13 +27,15 @@ def _get_color_tags(color_id:int, tag_ids:int):
     return color_tags
 
 def _remove_tags( color_id:int ,  tag_ids:list  ):
+    if not tag_ids: return 
     color_tags = _get_color_tags(color_id, tag_ids)
     for color_tag in color_tags: db_session.delete(color_tag)
     db_session.commit() 
 
 
 def _add_tags( color_id:int, tag_ids:list):
-    color_tags = _get_color_tags(color_id, tag_ids)
+    if not tag_ids: return 
+    color_tags = [ColorTags(color_id=color_id, tag_id=tag_id) for tag_id in tag_ids]
     for color_tag in color_tags: db_session.add(color_tag)
     db_session.commit() 
 
@@ -89,18 +91,18 @@ def edit_color_tags(color_id):
     # check tag ids if they exist and user owns them 
     for tag_id in tag_ids : 
         owns_tag(lambda tag_id: None)( tag_id = tag_id)
-   
+        
     existing_tags = Color.query.get(color_id).tags 
     existing_tag_ids = [existing_tag.tag_id for existing_tag in existing_tags]
     
-    old_tags_id = set(existing_tag_ids)
-    new_tags_id = set(tag_ids)
+    old_tag_ids = set(existing_tag_ids)
+    new_tag_ids = set(tag_ids)
 
-    _remove_tags( color_id,   list(old_tags_ids - new_tags_id) )
-    _add_tags( color_id, list( new_tags_id - old_tags_id))
+    _remove_tags( color_id,   list(old_tag_ids - new_tag_ids) )
+    _add_tags( color_id, list( new_tag_ids - old_tag_ids))
 
     existing_tags = [Tag.query.get(color_tag.tag_id) for color_tag in existing_tags]
-    return Rest.sucess(data={"tags": TagSchema().dump(existing_tags, many=True)})
+    return Rest.success(data={"tags": TagSchema().dump(existing_tags, many=True)})
 
     
 @api.route("/colors/unrated")
@@ -146,7 +148,7 @@ def add_color():
     return Rest.success(data=ColorSchema().dump(color), response_code=201, 
         **{"Location": url_for("api.get_color", color_id=color.id)}) 
 
-@api.route("/colors/<int:color_id>", methods=["PUT"])
+@api.route("/color/<int:color_id>", methods=["PUT"])
 @owns_color
 def edit_colors(color_id):
     results = ColorSchema().load(request.json)
@@ -160,13 +162,12 @@ def edit_colors(color_id):
 @api.route("/color/<int:color_id>", methods=["DELETE"])
 @owns_color
 def remove_color(color_id):
-    db_session.delete(Color.query.get(color_id))
-    db_session.commit() 
+    delete_colors({"color_ids": [color_id]}, "color_ids")
     return Rest.success() 
 
 @api.route("/colors", methods=["DELETE"])
 def remove_colors():
-    delete_models(Color, request.json, "color_ids")
+    delete_colors( request.json, "color_ids")
     return Rest.success()
 
 

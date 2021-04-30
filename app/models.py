@@ -64,7 +64,7 @@ class Color(DefaultMixin, Base):
     description = Column(Text)
     rating = Column(Integer, default=0)
     code = Column(String(7), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id',  onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
 
     tags = relationship('ColorTags', backref="color")
 
@@ -78,7 +78,7 @@ class Tag(DefaultMixin, Base):
     __tablename__ = "tags"
     name = Column(String(32), nullable=False)
     color = Column(String(7), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id',  onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
 
     colors = relationship('ColorTags',  backref="tag")
     
@@ -90,10 +90,11 @@ class Tag(DefaultMixin, Base):
 
 class ColorTags( DefaultMixin, Base):
     __tablename__ ="color_tags"
-    color_id = Column(Integer, ForeignKey("colors.id",onupdate="CASCADE", ondelete="CASCADE" ) , nullable=False)
-    tag_id = Column(Integer, ForeignKey("tags.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False ) 
+    color_id = Column(Integer, ForeignKey("colors.id") , nullable=False)
+    tag_id = Column(Integer, ForeignKey("tags.id"), nullable=False ) 
 
     __table_args__ = (UniqueConstraint('color_id', 'tag_id', name='_user_colortags_uc'),)
+
 
 class LoggedOutToken( DefaultMixin, Base):
     __tablename__ = "expired_tokens"

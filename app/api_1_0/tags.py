@@ -1,4 +1,4 @@
-from . import api , delete_models
+from . import api , delete_tags
 from app.models import Tag 
 from app.schemas import TagSchema, ColorSchema
 from flask import g , request, url_for 
@@ -54,15 +54,13 @@ def get_edit_tag(tag_id):
 @api.route("/tag/<int:tag_id>", methods=["DELETE"])
 @owns_tag
 def remove_tag(tag_id):
-    tag = Tag.query.get(tag_id)
-    db_session.delete(tag) 
-    db_session.commit() 
+    delete_tags({"tag_ids": [tag_id]}, "tag_ids")
     return Rest.success()
 
 
 @api.route("/tags", methods=["DELETE"])
 def remove_tags():
-    delete_models(Tag, request.json, "tag_ids")
+    delete_tags(request.json, "tag_ids")
     return Rest.success()
 
 @api.route("/tag/<int:tag_id>/colors")
