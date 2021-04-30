@@ -1,5 +1,5 @@
 import os 
-from sqlalchemy import  create_engine, event 
+from sqlalchemy import  create_engine, event ,inspect
 from sqlalchemy.orm import  sessionmaker , scoped_session
 from sqlite3 import Connection as SQLite3Connection
 from sqlalchemy.ext.declarative import declarative_base
@@ -21,12 +21,19 @@ def _set_sqlite_pragma(dbapi_connection, connection_record):
         cursor.execute("PRAGMA foreign_keys=ON;")
         cursor.close()
 
+def table_exists(engine,name):
+    ins = inspect(engine)
+    ret =ins.dialect.has_table(engine.connect(),name)
+    return ret
 
 def create_all_tables():
     import app.models 
+    if table_exists(engine, "users") : 
+        return 
     app.models.Base.metadata.create_all(bind=engine)
 
 
 def remove_all_tables():
     import app.models 
+    if not table_exists(engine, "users"): return 
     app.models.Base.metadata.drop_all(bind=engine)
