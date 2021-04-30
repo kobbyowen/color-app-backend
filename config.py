@@ -12,17 +12,15 @@ class Config:
 
 class ProductionConfig(Config):
     DEBUG = False 
-    DATABASE_PASSWORD = ""
-    DATABASE_USERNAME = ""
-    DATABASE_URI = f"mysql+pymysql://{DATABASE_USERNAME}:{DATABASE_PASSWORD}@localhost/color-app"
+    DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///myDB.db'
 
 class DevelopmentConfig(Config):
     DEBUG = True 
-    DATABASE_URI = f"sqlite:///{os.path.join(basedir, 'data', 'data3.sqlite')}"
+    DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///myDB.db'
 
 class TestingConfig(Config):
     TESTING= True 
-    DATABASE_URI = f"sqlite:///{os.path.join(basedir, 'data', 'testing3.sqlite')}"
+    DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///myDB.db'
 
 
 config = {
