@@ -12,15 +12,15 @@ class Config:
 
 class ProductionConfig(Config):
     DEBUG = False 
-    DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///myDB.db'
+    DATABASE_URI = os.environ.get('DATABASE_URL').replace("://", "ql://", 1) or 'sqlite:///myDB.db'
 
 class DevelopmentConfig(Config):
     DEBUG = True 
-    DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///myDB.db'
+    DATABASE_URI = os.environ.get('DATABASE_URL').replace("://", "ql://", 1) or 'sqlite:///myDB.db'
 
 class TestingConfig(Config):
     TESTING= True 
-    DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///myDB.db'
+    DATABASE_URI = os.environ.get('DATABASE_URL').replace("://", "ql://", 1) or 'sqlite:///myDB.db'
 
 
 config = {
