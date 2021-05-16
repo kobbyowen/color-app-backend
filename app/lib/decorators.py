@@ -2,10 +2,9 @@ from functools import wraps
 import os 
 from flask import abort , g , Request, request
 from app.models import User, LoggedOutToken, Color, Tag 
-from app.lib.utils import Rest 
 from coverage import coverage, Coverage , misc
 from app.errors import ColorAppException, NO_TOKEN_PROVIDED,EXPIRED_TOKEN, INVALID_TOKEN,\
-     LOGGED_OUT_TOKEN, RESOURCE_NOT_FOUND , INSUFFICIENT_PERMISSION
+     LOGGED_OUT_TOKEN, INSUFFICIENT_PERMISSION
 import jwt 
 from app.database import Base
 

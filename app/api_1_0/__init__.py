@@ -8,6 +8,7 @@ api = Blueprint("api", __name__)
 
 @api.before_request
 def load_user():
+    if request.method.lower() == "options": return 
     load_user_from_token(request)
 
 def delete_color_side_effects(id):
