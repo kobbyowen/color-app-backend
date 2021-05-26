@@ -82,11 +82,11 @@ class TestGetColorsEndpoint(ColorTestCase):
     def test_get_colors_with_invalid_args(self):
         response = fetch(self.client, "/api/v1/colors?page=a&size=-10", "get", 
             headers=get_api_headers(User.query.first()))
-        code = response.json["code"]
+        code = response.json["errorCode"]
         self.assertEqual(code, MALFORMED_URL)
         response = fetch(self.client, "/api/v1/colors?page=0&size=b", "get", 
             headers=get_api_headers(User.query.first()))
-        code = response.json["code"]
+        code = response.json["errorCode"]
         self.assertEqual(code, MALFORMED_URL)
 
     def test_get_tags_for_color(self): 
@@ -118,7 +118,7 @@ class TestAddColorsEndpoint(ColorTestCase):
             headers=get_api_headers(User.query.first()),
             data={"name": invalid_name, "code": "#ffffff", "rating": 1, "description": "help"}
             )
-            self.assertEqual(response.json["code"], VALIDATION_FAILED)
+            self.assertEqual(response.json["errorCode"], VALIDATION_FAILED)
 
     def test_add_color_with_invalid_rating(self): 
         invalid_rates = [6, -1]
@@ -127,7 +127,7 @@ class TestAddColorsEndpoint(ColorTestCase):
             headers=get_api_headers(User.query.first()),
             data={"name": "kobby", "code": "#ffffff", "rating": invalid_rate, "description": "help"}
             )
-            self.assertEqual(response.json["code"], VALIDATION_FAILED)
+            self.assertEqual(response.json["errorCode"], VALIDATION_FAILED)
 
     def test_add_color_with_invalid_code(self): 
         invalid_codes = ["ffffff", "#123jff"]
@@ -136,7 +136,7 @@ class TestAddColorsEndpoint(ColorTestCase):
             headers=get_api_headers(User.query.first()),
             data={"name": "kobby", "code": invalid_code, "rating": 3, "description": "help"}
             )
-            self.assertEqual(response.json["code"], VALIDATION_FAILED)
+            self.assertEqual(response.json["errorCode"], VALIDATION_FAILED)
 
 
     def test_add_valid_color(self): 
@@ -167,7 +167,7 @@ class TestEditColorsEndpoint(ColorTestCase):
         response = fetch(self.client, f"/api/v1/color/{color.id}","put",
         data={"name": "Favorite Color" },headers =get_api_headers(user))
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.json["code"], INSUFFICIENT_PERMISSION)
+        self.assertEqual(response.json["errorCode"], INSUFFICIENT_PERMISSION)
 
     def test_edit_color_with_invalid_tag_ids(self) :
         color, old_tags, user = TestEditColorsEndpoint.get_color_details()
@@ -186,6 +186,7 @@ class TestEditColorsEndpoint(ColorTestCase):
         color = Color.query.get(color.id) 
         new_tags = color.tags 
         self.assertEqual(len(old_tags) -1, len(new_tags))
+        self.assertEqual(len(response.json["tags"]), len(new_tags))
     
     def test_edit_color_by_adding_a_tag(self): 
         color, old_tags, user = TestEditColorsEndpoint.get_color_details()
@@ -200,7 +201,8 @@ class TestEditColorsEndpoint(ColorTestCase):
         color = Color.query.get(color.id)
         new_tags = color.tags 
         self.assertEqual(len(old_tags) + 1, len(new_tags))
-
+        self.assertEqual(len(response.json["tags"]), len(new_tags))
+     
      
     def test_edit_color_tags_for_color_that_dont_exist(self): 
         color, old_tags, user = TestEditColorsEndpoint.get_color_details()

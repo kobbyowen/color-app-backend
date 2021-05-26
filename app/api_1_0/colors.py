@@ -101,7 +101,7 @@ def edit_color_tags(color_id):
     _remove_tags( color_id,   list(old_tag_ids - new_tag_ids) )
     _add_tags( color_id, list( new_tag_ids - old_tag_ids))
 
-    existing_tags = [Tag.query.get(color_tag.tag_id) for color_tag in existing_tags]
+    existing_tags = [Tag.query.get(color_tag.tag_id) for color_tag in Color.query.get(color_id).tags ]
     return Rest.success(data={"tags": TagSchema().dump(existing_tags, many=True)})
 
     
