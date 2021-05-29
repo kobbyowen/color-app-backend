@@ -150,11 +150,12 @@ def add_color():
 
 @api.route("/color/<int:color_id>", methods=["PUT"])
 @owns_color
-def edit_colors(color_id):
+def edit_colors(color_id:int):
     results = ColorSchema().load(request.json)
-    _check_color_exists(color_id, results["name"], color_id)
     color = Color.query.get(color_id)
-    color.name, color.code  = results["name"], results["code"]
+    _check_color_exists(color_id, results.get("name", color.name), color_id)
+    color.name, color.code, color.rating, color.description = (results.get("name", color.name), results.get("code", color.code), 
+                            results.get("rating", color.rating), results.get("description", color.description))
     db_session.add(color)
     db_session.commit()
     return Rest.success(data=ColorSchema().dump(color))
