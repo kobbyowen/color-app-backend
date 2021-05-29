@@ -153,7 +153,7 @@ def add_color():
 def edit_colors(color_id:int):
     results = ColorSchema().load(request.json)
     color = Color.query.get(color_id)
-    _check_color_exists(color_id, results.get("name", color.name), color_id)
+    _check_color_exists(results.get("name", color.name), color_id)
     color.name, color.code, color.rating, color.description = (results.get("name", color.name), results.get("code", color.code), 
                             results.get("rating", color.rating), results.get("description", color.description))
     db_session.add(color)
